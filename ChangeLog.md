@@ -1,5 +1,9 @@
 # Mouse Wheel ChangeLog
 
+## 3.1.14
+
+* Make wheel event listener passive
+
 ## 3.1.13
 
 * Update copyright notice and license to remove years

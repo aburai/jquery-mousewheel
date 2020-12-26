@@ -1,55 +1,58 @@
 /*!
- * jQuery Mousewheel 3.1.13
+ * jQuery Mousewheel 3.1.14
  * Copyright OpenJS Foundation and other contributors
  */
-
-( function( factory ) {
-    if ( typeof define === "function" && define.amd ) {
-
+(function(factory) {
+    if (typeof define === 'function' && define.amd) {
         // AMD. Register as an anonymous module.
-        define( [ "jquery" ], factory );
-    } else if ( typeof exports === "object" ) {
-
+        define(['jquery'], factory);
+    }
+    else if (typeof exports === 'object') {
         // Node/CommonJS style for Browserify
         module.exports = factory;
-    } else {
-
-        // Browser globals
-        factory( jQuery );
     }
-} )( function( $ ) {
+    else {
+        // Browser globals
+        factory(jQuery);
+    }
+})(function($) {
 
-    var toFix  = [ "wheel", "mousewheel", "DOMMouseScroll", "MozMousePixelScroll" ],
-        toBind = ( "onwheel" in window.document || window.document.documentMode >= 9 ) ?
-                    [ "wheel" ] : [ "mousewheel", "DomMouseScroll", "MozMousePixelScroll" ],
-        slice  = Array.prototype.slice,
-        nullLowestDeltaTimeout, lowestDelta;
+    const toFix = ['wheel', 'mousewheel', 'DOMMouseScroll', 'MozMousePixelScroll']
+    const toBind = ('onwheel' in window.document || window.document.documentMode >= 9)
+        ? ['wheel']
+        : ['mousewheel', 'DomMouseScroll', 'MozMousePixelScroll']
+    const slice = Array.prototype.slice
+    let nullLowestDeltaTimeout
+    let lowestDelta
 
-    if ( $.event.fixHooks ) {
-        for ( var i = toFix.length; i; ) {
-            $.event.fixHooks[ toFix[ --i ] ] = $.event.mouseHooks;
+    if ($.event.fixHooks) {
+        for (let i = toFix.length; i;) {
+            $.event.fixHooks[toFix[--i]] = $.event.mouseHooks;
         }
     }
 
-    var special = $.event.special.mousewheel = {
-        version: "3.1.12",
+    const special = $.event.special.mousewheel = {
+        version: '3.1.14',
 
         setup: function() {
-            if ( this.addEventListener ) {
-                for ( var i = toBind.length; i; ) {
-                    this.addEventListener( toBind[ --i ], handler, false );
+            if (this.addEventListener) {
+                let bind
+                for (let i = toBind.length; i;) {
+                    bind = toBind[--i];
+                    this.addEventListener(bind, handler, bind === 'wheel' ? {passive: true} : false);
                 }
-            } else {
+            }
+            else {
                 this.onmousewheel = handler;
             }
 
             // Store the line height and page height for this particular element
-            $.data( this, "mousewheel-line-height", special.getLineHeight( this ) );
-            $.data( this, "mousewheel-page-height", special.getPageHeight( this ) );
+            $.data(this, 'mousewheel-line-height', special.getLineHeight(this));
+            $.data(this, 'mousewheel-page-height', special.getPageHeight(this));
         },
 
         teardown: function() {
-            if ( this.removeEventListener ) {
+            if (this.removeEventListener) {
                 for ( var i = toBind.length; i; ) {
                     this.removeEventListener( toBind[ --i ], handler, false );
                 }
@@ -58,18 +61,18 @@
             }
 
             // Clean up the data we added to the element
-            $.removeData( this, "mousewheel-line-height" );
-            $.removeData( this, "mousewheel-page-height" );
+            $.removeData(this, 'mousewheel-line-height');
+            $.removeData(this, 'mousewheel-page-height');
         },
 
         getLineHeight: function( elem ) {
             var $elem = $( elem ),
-                $parent = $elem[ "offsetParent" in $.fn ? "offsetParent" : "parent" ]();
+                $parent = $elem[ 'offsetParent' in $.fn ? 'offsetParent' : 'parent' ]();
             if ( !$parent.length ) {
-                $parent = $( "body" );
+                $parent = $( 'body' );
             }
-            return parseInt( $parent.css( "fontSize" ), 10 ) ||
-                parseInt( $elem.css( "fontSize" ), 10 ) || 16;
+            return parseInt( $parent.css( 'fontSize' ), 10 ) ||
+                parseInt( $elem.css( 'fontSize' ), 10 ) || 16;
         },
 
         getPageHeight: function( elem ) {
@@ -84,14 +87,13 @@
 
     $.fn.extend( {
         mousewheel: function( fn ) {
-            return fn ? this.on( "mousewheel", fn ) : this.trigger( "mousewheel" );
+            return fn ? this.on( 'mousewheel', fn ) : this.trigger( 'mousewheel' );
         },
 
         unmousewheel: function( fn ) {
-            return this.off( "mousewheel", fn );
+            return this.off( 'mousewheel', fn );
         }
     } );
-
 
     function handler( event ) {
         var orgEvent   = event || window.event,
@@ -101,24 +103,24 @@
             deltaY     = 0,
             absDelta   = 0;
         event = $.event.fix( orgEvent );
-        event.type = "mousewheel";
+        event.type = 'mousewheel';
 
         // Old school scrollwheel delta
-        if ( "detail" in orgEvent ) {
+        if ( 'detail' in orgEvent ) {
             deltaY = orgEvent.detail * -1;
         }
-        if ( "wheelDelta" in orgEvent ) {
+        if ( 'wheelDelta' in orgEvent ) {
             deltaY = orgEvent.wheelDelta;
         }
-        if ( "wheelDeltaY" in orgEvent ) {
+        if ( 'wheelDeltaY' in orgEvent ) {
             deltaY = orgEvent.wheelDeltaY;
         }
-        if ( "wheelDeltaX" in orgEvent ) {
+        if ( 'wheelDeltaX' in orgEvent ) {
             deltaX = orgEvent.wheelDeltaX * -1;
         }
 
         // Firefox < 17 horizontal scrolling related to DOMMouseScroll event
-        if ( "axis" in orgEvent && orgEvent.axis === orgEvent.HORIZONTAL_AXIS ) {
+        if ( 'axis' in orgEvent && orgEvent.axis === orgEvent.HORIZONTAL_AXIS ) {
             deltaX = deltaY * -1;
             deltaY = 0;
         }
@@ -127,11 +129,11 @@
         delta = deltaY === 0 ? deltaX : deltaY;
 
         // New school wheel delta (wheel event)
-        if ( "deltaY" in orgEvent ) {
+        if ( 'deltaY' in orgEvent ) {
             deltaY = orgEvent.deltaY * -1;
             delta  = deltaY;
         }
-        if ( "deltaX" in orgEvent ) {
+        if ( 'deltaX' in orgEvent ) {
             deltaX = orgEvent.deltaX;
             if ( deltaY === 0 ) {
                 delta  = deltaX * -1;
@@ -149,12 +151,12 @@
         //   * deltaMode 1 is by lines
         //   * deltaMode 2 is by pages
         if ( orgEvent.deltaMode === 1 ) {
-            var lineHeight = $.data( this, "mousewheel-line-height" );
+            var lineHeight = $.data( this, 'mousewheel-line-height' );
             delta  *= lineHeight;
             deltaY *= lineHeight;
             deltaX *= lineHeight;
         } else if ( orgEvent.deltaMode === 2 ) {
-            var pageHeight = $.data( this, "mousewheel-page-height" );
+            var pageHeight = $.data( this, 'mousewheel-page-height' );
             delta  *= pageHeight;
             deltaY *= pageHeight;
             deltaX *= pageHeight;
@@ -182,9 +184,9 @@
         }
 
         // Get a whole, normalized value for the deltas
-        delta  = Math[ delta  >= 1 ? "floor" : "ceil" ]( delta  / lowestDelta );
-        deltaX = Math[ deltaX >= 1 ? "floor" : "ceil" ]( deltaX / lowestDelta );
-        deltaY = Math[ deltaY >= 1 ? "floor" : "ceil" ]( deltaY / lowestDelta );
+        delta  = Math[ delta  >= 1 ? 'floor' : 'ceil' ]( delta  / lowestDelta );
+        deltaX = Math[ deltaX >= 1 ? 'floor' : 'ceil' ]( deltaX / lowestDelta );
+        deltaY = Math[ deltaY >= 1 ? 'floor' : 'ceil' ]( deltaY / lowestDelta );
 
         // Normalise offsetX and offsetY properties
         if ( special.settings.normalizeOffset && this.getBoundingClientRect ) {
@@ -231,8 +233,8 @@
         // Side note, this actually impacts the reported scroll distance
         // in older browsers and can cause scrolling to be slower than native.
         // Turn this off by setting $.event.special.mousewheel.settings.adjustOldDeltas to false.
-        return special.settings.adjustOldDeltas && orgEvent.type === "mousewheel" &&
+        return special.settings.adjustOldDeltas && orgEvent.type === 'mousewheel' &&
             absDelta % 120 === 0;
     }
 
-} );
+});
